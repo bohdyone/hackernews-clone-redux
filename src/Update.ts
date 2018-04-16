@@ -11,15 +11,27 @@ interface State {
   show: ViewType;
   selectedStory: Story | null;
   commentsExpanded: { [key: number]: boolean };
+  storyCommentCache: ItemLookup;
+  storyCache: ItemLookup;
 }
+
+type ItemLookup = {
+  [key: number]: any;
+};
 
 const initState: State = {
   show: 'topStories',
   selectedStory: null,
-  commentsExpanded: {}
+  commentsExpanded: {},
+  storyCommentCache: {},
+  storyCache: {}
 };
 
-export type Action = 'ShowTopStories' | 'ShowComments' | 'ShowChildren';
+export type Action =
+  | 'ShowTopStories'
+  | 'ShowComments'
+  | 'StoriesLoaded'
+  | 'ShowChildren';
 
 export const store = createStore(reducer, initState);
 
@@ -36,21 +48,33 @@ export function reducer(
         ...state,
         show: 'topStories'
       };
+
     case 'ShowComments':
+      // load comments
       return {
         ...state,
-        show: 'topStories'
+        show: 'comments',
+        storyCommentCache: [],
+        commentsExpanded: {}
       };
+
+    case 'StoriesLoaded':
+      return {
+        ...state,
+        storyCache: payload.stories
+      };
+
     case 'ShowChildren':
       let show = payload.show;
 
       let commentsExpanded = { ...state.commentsExpanded };
       if (show) {
         commentsExpanded[payload.comment.id] = true;
+        // load payload.comment.kids
+        // store into comment cache
       } else {
         delete commentsExpanded[payload.comment.id];
       }
-      //load payload.comment.kids
 
       return {
         ...state,

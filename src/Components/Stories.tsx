@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 
 interface Props {
   stories: any[];
+  show: boolean;
 }
 
 class StoriesComponent extends React.Component<Props, {}> {
@@ -21,6 +22,8 @@ class StoriesComponent extends React.Component<Props, {}> {
     const stories = this.props.stories;
     console.log(stories);
     console.log('Stories render');
+    if (!this.props.show) return null;
+
     return stories.map(story => (
       <tr key={story.id} className="athing">
         <Story story={story} />
@@ -32,7 +35,8 @@ class StoriesComponent extends React.Component<Props, {}> {
 const mapStateToProps = (state: State): Props => {
   console.log(state);
   return {
-    stories: state.stories
+    stories: state.stories,
+    show: state.show == 'topStories'
   };
 };
 

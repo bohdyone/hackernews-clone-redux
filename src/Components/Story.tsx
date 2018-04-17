@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { store, showCommentsAction } from '../Update';
 
 interface Props {
   story: any;
@@ -7,6 +8,7 @@ interface Props {
 class Story extends React.Component<Props, {}> {
   clickDiscuss(story: any, e: any) {
     e.preventDefault();
+    store.dispatch(showCommentsAction(story));
   }
   render() {
     const story = this.props.story;

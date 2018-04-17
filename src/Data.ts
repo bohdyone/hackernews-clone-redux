@@ -9,6 +9,8 @@ export function getTopStories$(): Observable<Item[]> {
   // .scan(arrayReducer, []);
 }
 
+export const getCommentsForStory$ = getListOfItem$;
+
 // function arrayReducer<T>(acc: T[], val: T) {
 //   console.log({ arrayReducer: acc });
 //   acc.push(val);
@@ -19,9 +21,13 @@ export function getTopStories$(): Observable<Item[]> {
 
 export function getListOfItem$(ids: number[]): Observable<Item[]> {
   let pipe = Observable.from(ids)
-    // .take(55)
+    .take(55)
     .bufferCount(CONCURRENCY_LIMIT)
+    // .pipe(combineLatest(ids=>ids.map(getItem$)), concatMap(i=>i))
     .concatMap(ids => Observable.forkJoin(ids.map(getItem$)));
+  // .concatMap()
+  // .combineLatest()
+  // .concatMap()
   // .bufferTime(BUFFER_INTERVAL);
 
   return pipe;
@@ -39,6 +45,9 @@ export function getListOfItem$(ids: number[]): Observable<Item[]> {
 
 export interface Item {
   id: number;
+  kids?: number[];
+  text: string;
+  by: string;
 }
 
 function getItem$(id: number): Observable<Item> {

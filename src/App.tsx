@@ -4,6 +4,7 @@ import { store, showTopStoriesAction } from './Update';
 
 import logo from './logo.svg';
 import Stories from './Components/Stories';
+import Comments from './Components/Comments';
 
 class App extends React.Component {
   componentDidMount() {
@@ -17,6 +18,7 @@ class App extends React.Component {
           <h1 className="App-title">Welcome to React</h1>
         </header>
         <Stories />
+        <Comments />
       </div>
     );
   }

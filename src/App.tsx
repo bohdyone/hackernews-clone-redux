@@ -1,9 +1,14 @@
 import * as React from 'react';
 import './App.css';
+import { store, showTopStoriesAction } from './Update';
 
 import logo from './logo.svg';
+import Stories from './Components/Stories';
 
 class App extends React.Component {
+  componentDidMount() {
+    store.dispatch(showTopStoriesAction());
+  }
   public render() {
     return (
       <div className="App">
@@ -11,9 +16,7 @@ class App extends React.Component {
           <img src={logo} className="App-logo" alt="logo" />
           <h1 className="App-title">Welcome to React</h1>
         </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.tsx</code> and save to reload.
-        </p>
+        <Stories />
       </div>
     );
   }

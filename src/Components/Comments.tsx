@@ -1,17 +1,17 @@
 import * as React from 'react';
 import Comment from './Comment';
-import { Item } from '../Data';
+import { Item, IndexedItem } from '../Data';
 import { store, showChildrenAction, State } from '../Update';
 import { connect } from 'react-redux';
+import * as _ from 'lodash';
 // import _ from 'lodash';
 
 const DEPTH_SPACER = 40;
 
 interface Props {
   story: Item | null;
-  comments: Item[];
+  comments: IndexedItem[];
   commentsExpanded: { [key: number]: boolean };
-  show: boolean;
 }
 
 class CommentsComponent extends React.Component<Props, {}> {
@@ -55,27 +55,59 @@ class CommentsComponent extends React.Component<Props, {}> {
   //   return outputComments;
   // }
 
-  toggleCommentChildren(comment: Item, show: boolean) {
+  toggleCommentChildren(comment: IndexedItem, show: boolean) {
+    console.log({ toggleCommentChildren: comment });
     store.dispatch(showChildrenAction(comment, show));
+  }
+
+  flattenItems(items: IndexedItem[], depth = 1): IndexedItem[] {
+    let levelItems = items.filter(i => i.depth == depth);
+    let otherItems = _.difference(items, levelItems);
+    levelItems = _.orderBy(levelItems, 'index');
+    return _.flatMap(levelItems, i => [
+      i,
+      ...this.flattenItems(otherItems, depth + 1).filter(
+        c => c.parentId == i.item.id
+      )
+    ]);
+  }
+
+  flattenItemsQuick(
+    items: { [parentId: number]: IndexedItem[] },
+    parentId: number
+  ): IndexedItem[] {
+    let children = _.sortBy(items[parentId], 'index');
+    let withGrandChildren = _.flatMap(children, c => [
+      c,
+      ...this.flattenItemsQuick(items, c.item.id)
+    ]);
+
+    return withGrandChildren;
   }
 
   render() {
     console.log('Comments render');
-    const comments = this.props.comments;
+    // let forSorting = this.props.comments.map(ci=>{
+    //   index = parseFloat(`${ci.parentIndex.}`)
+    // })
+    console.log(this.props.story);
+    let grouped = _.groupBy(this.props.comments, 'parentId');
+    const commentInfos = this.flattenItemsQuick(
+      grouped,
+      (this.props.story || { id: 0 }).id
+    );
     const props = this.props;
-
-    if (!props.show) return null;
 
     return (
       <table className="comment-tree">
         <tbody>
-          {comments.map(comment => (
+          {commentInfos.map(cInfo => (
             <Comment
-              key={comment.id}
-              comment={comment}
-              spacing={DEPTH_SPACER * 1}
-              showingChildren={comment.id in props.commentsExpanded}
-              toggleChildren={this.toggleCommentChildren.bind(null, comment)}
+              key={cInfo.item.id}
+              comment={cInfo.item}
+              spacing={DEPTH_SPACER * (cInfo.depth || 0)}
+              showingChildren={cInfo.item.id in props.commentsExpanded}
+              toggleChildren={this.toggleCommentChildren.bind(null, cInfo)}
             />
           ))}
         </tbody>
@@ -89,8 +121,7 @@ const mapStateToProps = (state: State): Props => {
   return {
     comments: state.comments,
     commentsExpanded: state.commentsExpanded,
-    story: state.selectedStory,
-    show: state.show == 'comments'
+    story: state.selectedStory
   };
 };
 

@@ -8,7 +8,7 @@ interface Props {
   spacing: number;
 }
 
-class Comment extends React.Component<Props, {}> {
+class Comment extends React.PureComponent<Props, {}> {
   loadChildren = (yes: boolean) => {
     this.props.toggleChildren(yes);
   };

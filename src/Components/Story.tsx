@@ -5,7 +5,7 @@ interface Props {
   story: any;
 }
 
-class Story extends React.Component<Props, {}> {
+class Story extends React.PureComponent<Props, {}> {
   clickDiscuss(story: any, e: any) {
     e.preventDefault();
     store.dispatch(showCommentsAction(story));

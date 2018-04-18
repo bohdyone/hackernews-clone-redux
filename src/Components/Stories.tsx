@@ -1,11 +1,12 @@
 import * as React from 'react';
+import * as _ from 'lodash';
 import Story from './Story';
 import { State } from '../Update';
 import { connect } from 'react-redux';
+import { IndexedItem } from '../Data';
 
 interface Props {
-  stories: any[];
-  show: boolean;
+  stories: IndexedItem[];
 }
 
 class StoriesComponent extends React.Component<Props, {}> {
@@ -19,11 +20,11 @@ class StoriesComponent extends React.Component<Props, {}> {
   componentDidMount() {}
 
   render() {
-    const stories = this.props.stories;
+    // reorder and render
+    const stories = _.sortBy(this.props.stories, 'index').map(is => is.item);
+
     console.log(stories);
     console.log('Stories render');
-    if (!this.props.show) return null;
-
     return stories.map(story => (
       <tr key={story.id} className="athing">
         <Story story={story} />
@@ -35,8 +36,7 @@ class StoriesComponent extends React.Component<Props, {}> {
 const mapStateToProps = (state: State): Props => {
   console.log(state);
   return {
-    stories: state.stories,
-    show: state.show == 'topStories'
+    stories: state.stories
   };
 };
 

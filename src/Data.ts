@@ -1,15 +1,17 @@
 import { Observable } from 'rxjs';
 
-// const BUFFER_INTERVAL  = 1000;
+// const BUFFER_INTERVAL = 500;
 const CONCURRENCY_LIMIT = 15;
 const ajax = Observable.ajax;
 
-export function getTopStories$(): Observable<Item[]> {
+export function getTopStories$(): Observable<IndexedItem[]> {
   return getTopStoryIds$().mergeMap(getListOfItem$);
   // .scan(arrayReducer, []);
 }
 
-export const getCommentsForStory$ = getListOfItem$;
+export function getCommentsForItem$(item: Item, depth: number) {
+  return getListOfItem$(item.kids || [], item.id, depth + 1);
+}
 
 // function arrayReducer<T>(acc: T[], val: T) {
 //   console.log({ arrayReducer: acc });
@@ -19,12 +21,27 @@ export const getCommentsForStory$ = getListOfItem$;
 //   return acc;
 // }
 
-export function getListOfItem$(ids: number[]): Observable<Item[]> {
-  let pipe = Observable.from(ids)
-    .take(55)
-    .bufferCount(CONCURRENCY_LIMIT)
-    // .pipe(combineLatest(ids=>ids.map(getItem$)), concatMap(i=>i))
-    .concatMap(ids => Observable.forkJoin(ids.map(getItem$)));
+export function getListOfItem$(
+  ids: number[],
+  parentId?: number,
+  depth: number = 0
+): Observable<IndexedItem[]> {
+  let pipe = Observable.from(
+    ids.map((id, index): IndexedId => ({
+      id: id,
+      index: index,
+      parentId: parentId,
+      depth: depth
+    }))
+  )
+    .take(100)
+    .map(getItemWithIndex$)
+    .mergeAll(CONCURRENCY_LIMIT)
+    .bufferTime(500);
+  // .bufferCount(500);
+  // .map(i => [i]);
+  // .pipe(combineLatest(ids=>ids.map(getItem$)), concatMap(i=>i))
+  // .concatMap(ids => Observable.forkJoin(ids.map(getItemWithIndex$)));
   // .concatMap()
   // .combineLatest()
   // .concatMap()
@@ -48,6 +65,40 @@ export interface Item {
   kids?: number[];
   text: string;
   by: string;
+}
+
+export type IndexedItem = {
+  index: number;
+  item: Item;
+  depth?: number;
+  parentId?: number;
+};
+
+type IndexedId = {
+  index: number;
+  id: number;
+  depth: number;
+  parentId?: number;
+};
+
+// export type IndexedDepthItem = IndexedItem & {
+//   depth: number;
+// };
+
+function getItemWithIndex$({
+  index,
+  parentId,
+  depth,
+  id
+}: IndexedId): Observable<IndexedItem> {
+  console.log({ getItem: id });
+  let item$ = getItem$(id) as Observable<Item>;
+  return item$.map(item => ({
+    index: index,
+    item: item,
+    depth: depth,
+    parentId: parentId
+  }));
 }
 
 function getItem$(id: number): Observable<Item> {

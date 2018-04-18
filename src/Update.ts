@@ -1,8 +1,8 @@
 import { applyMiddleware, createStore } from 'redux';
 import { combineEpics, createEpicMiddleware, Epic } from 'redux-observable';
-import { getTopStories$, Item, getCommentsForStory$ } from './Data';
+import { getTopStories$, Item, getCommentsForItem$, IndexedItem } from './Data';
 
-type ViewType = 'topStories' | 'comments';
+export type ViewType = 'topStories' | 'comments';
 
 // interface Story {
 //   story: any;
@@ -15,8 +15,8 @@ export interface State {
   commentsExpanded: { [key: number]: boolean };
   storyCommentCache: ItemLookup;
   storyCache: ItemLookup;
-  stories: Item[];
-  comments: Item[];
+  stories: IndexedItem[];
+  comments: IndexedItem[];
 }
 
 export type ItemLookup = {
@@ -37,28 +37,44 @@ const initState: State = {
 //   type: 'ShowTopStories';
 // };
 
-type ActionTypes =
-  | 'ShowTopStories'
-  | 'ShowComments'
-  // | 'StoryListLoaded'
-  | 'StoriesLoaded'
-  | 'CommentsLoaded'
-  | 'ShowChildren';
-
-export type Action = {
-  type: ActionTypes;
+type ShowChildren = {
+  type: 'ShowChildren';
+  payload: {
+    item: Item;
+    depth: number;
+    show: boolean;
+  };
 };
 
-type ActionType = Action & {
-  payload: any;
+type ShowTopStories = {
+  type: 'ShowTopStories';
+  payload: undefined;
 };
 
-export function reducer(
-  state: State,
-  action: { type: ActionTypes; payload: any }
-): State {
+type ShowComments = {
+  type: 'ShowComments';
+  payload: Item;
+};
+
+type CommentsLoaded = {
+  type: 'CommentsLoaded';
+  payload: IndexedItem[];
+};
+type StoriesLoaded = {
+  type: 'StoriesLoaded';
+  payload: IndexedItem[];
+};
+
+type Action =
+  | ShowChildren
+  | ShowTopStories
+  | ShowComments
+  | CommentsLoaded
+  | StoriesLoaded;
+
+export function reducer(state: State, action: Action): State {
   // an error about the return type means you missed a case
-  const payload = action.payload;
+  // const payload = action.payload;
 
   if (state === undefined) return initState;
 
@@ -73,74 +89,87 @@ export function reducer(
 
     case 'ShowComments':
       // load comments
+
       return {
         ...state,
         show: 'comments',
+        selectedStory: action.payload,
         storyCommentCache: {},
         commentsExpanded: {},
         comments: []
       };
 
-    case 'StoriesLoaded':
+    case 'StoriesLoaded': {
+      let payload = action.payload;
       let newStories = [...state.stories];
       newStories.push(...payload);
       return {
         ...state,
         stories: newStories
       };
+    }
 
-    case 'CommentsLoaded':
+    case 'CommentsLoaded': {
+      let payload = action.payload;
       let newComments = [...state.comments];
       newComments.push(...payload);
       return {
         ...state,
         comments: newComments
       };
-
-    case 'ShowChildren':
+    }
+    case 'ShowChildren': {
+      let payload = action.payload;
       let show = payload.show;
+      console.log({ ShowChildren: payload });
 
       let commentsExpanded = { ...state.commentsExpanded };
       if (show) {
-        commentsExpanded[payload.comment.id] = true;
+        commentsExpanded[payload.item.id] = true;
         // load payload.comment.kids
         // store into comment cache
       } else {
-        delete commentsExpanded[payload.comment.id];
+        delete commentsExpanded[payload.item.id];
       }
 
       return {
         ...state,
         commentsExpanded: commentsExpanded
       };
+    }
   }
 }
 
-export function showChildrenAction(comment: Item, show: boolean): ActionType {
+export function showChildrenAction(
+  indexed: IndexedItem,
+  show: boolean
+): ShowChildren {
+  console.log({ showChildrenAction: indexed });
   return {
     type: 'ShowChildren',
     payload: {
-      comment: comment,
+      item: indexed.item,
+      depth: indexed.depth || 0,
       show: show
     }
   };
 }
 
-export function showTopStoriesAction(): ActionType {
+export function showTopStoriesAction(): ShowTopStories {
   return {
     type: 'ShowTopStories',
     payload: undefined
   };
 }
 
-export function showCommentsAction(story: Item): ActionType {
+export function showCommentsAction(story: Item): ShowComments {
   return {
     type: 'ShowComments',
     payload: story
   };
 }
 
-export function storiesLoadedAction(stories: Item[]): ActionType {
+export function storiesLoadedAction(stories: IndexedItem[]): StoriesLoaded {
   console.log({ storiesLoadedAction: stories });
   return {
     type: 'StoriesLoaded',
@@ -148,7 +177,7 @@ export function storiesLoadedAction(stories: Item[]): ActionType {
   };
 }
 
-export function commentsLoadedAction(comments: Item[]): ActionType {
+export function commentsLoadedAction(comments: IndexedItem[]): CommentsLoaded {
   console.log({ commentsLoadedAction: comments });
   return {
     type: 'CommentsLoaded',
@@ -164,21 +193,34 @@ const showTopStoriesEpic: Epic<Action, State> = action$ =>
       return i;
     })
     .mergeMap(getTopStories$)
+    .takeUntil(action$.ofType('ShowComments')) // cancel stories load when switching to comments
     .map(storiesLoadedAction);
 
-const showCommentsEpic: Epic<ActionType, State> = action$ =>
+const showCommentsEpic: Epic<Action, State, any> = action$ =>
   action$
     .ofType('ShowComments')
     .map(i => {
       console.log('ShowComments emitted');
       return i;
     })
-    .mergeMap(action => getCommentsForStory$(action.payload.kids))
+    .mergeMap((action: ShowComments) => getCommentsForItem$(action.payload, 0))
+    .map(commentsLoadedAction);
+
+const showChildrenEpic: Epic<Action, State> = action$ =>
+  action$
+    .ofType('ShowChildren')
+    .map(i => {
+      console.log('ShowChildren emitted');
+      return i;
+    })
+    .mergeMap((action: ShowChildren) =>
+      getCommentsForItem$(action.payload.item, action.payload.depth)
+    )
     .map(commentsLoadedAction);
 
 /* Some stuff */
 const asyncMiddleware = createEpicMiddleware(
-  combineEpics(showTopStoriesEpic, showCommentsEpic)
+  combineEpics(showTopStoriesEpic, showCommentsEpic, showChildrenEpic)
 );
 
 export const store = createStore(reducer, applyMiddleware(asyncMiddleware));

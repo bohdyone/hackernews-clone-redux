@@ -18,13 +18,15 @@ import {
   loadItemsAction,
   ShowCommentsAction,
   ShowChildrenAction,
-  State
+  State,
+  showChildrenAction
 } from './Update';
 import { IndexedItemDef, IndexedItem, ItemType, Item } from './Data';
 import * as _ from 'lodash';
 
 const ITEM_CONCURRENCY_LIMIT = 15;
 const FLUSH_TIMER = 500;
+const INTIAL_LOAD_DEPTH = 1;
 
 function* fetchItem(itemDef: IndexedItemDef) {
   let item = yield call(Api.fetchItem, itemDef.id);
@@ -33,6 +35,7 @@ function* fetchItem(itemDef: IndexedItemDef) {
       item: item,
       index: itemDef.index,
       parentId: itemDef.parentId,
+      depth: itemDef.depth,
       type: itemDef.type
     })
   );
@@ -122,6 +125,13 @@ export function* watchItemLoaded() {
   while (true) {
     let { payload }: ItemLoadedAction = yield take('ITEM_LOADED');
     yield put(itemsLoadedChannel, payload);
+    // load subcomments recursively
+    if (
+      payload.type == 'comment' &&
+      (payload.depth || 0) <= INTIAL_LOAD_DEPTH
+    ) {
+      yield put(showChildrenAction(payload.item, payload.depth, true));
+    }
   }
 }
 
@@ -129,7 +139,7 @@ export function* showComments(action: ShowCommentsAction) {
   yield loadChildren(action.payload);
 }
 
-function* loadChildren(item: Item, isStory = false) {
+function* loadChildren(item: Item, depth = 0, isStory = false) {
   let commentIds = item.kids || [];
   let items = commentIds.map(
     (id, index) =>
@@ -137,6 +147,7 @@ function* loadChildren(item: Item, isStory = false) {
         id: id,
         index: index,
         parentId: item.id,
+        depth: depth + 1,
         type: 'comment'
       }
   );
@@ -145,7 +156,7 @@ function* loadChildren(item: Item, isStory = false) {
 }
 
 function* showChildren(action: ShowChildrenAction) {
-  yield loadChildren(action.payload.item);
+  yield loadChildren(action.payload.item, action.payload.depth);
 }
 
 export function* rootSaga() {

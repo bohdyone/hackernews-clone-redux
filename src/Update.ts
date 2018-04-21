@@ -172,15 +172,16 @@ export function itemLoadedAction(item: IndexedItem): ItemLoadedAction {
 }
 
 export function showChildrenAction(
-  indexed: IndexedItem,
+  item: Item,
+  depth: number = 0,
   show: boolean
 ): ShowChildrenAction {
-  console.log({ showChildrenAction: indexed });
+  // console.log({ showChildrenAction: indexed });
   return {
     type: 'ITEM_CHILDREN_SHOW',
     payload: {
-      item: indexed.item,
-      depth: indexed.depth || 0,
+      item: item,
+      depth: depth,
       show: show
     }
   };

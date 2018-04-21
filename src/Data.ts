@@ -20,6 +20,7 @@ export type IndexedItemDef = {
   index: number;
   id: number;
   type: ItemType;
+  depth: number;
   parentId?: number;
 };
 

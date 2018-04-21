@@ -26,7 +26,7 @@ class StoriesComponent extends React.Component<Props, {}> {
     console.log(stories);
     console.log('Stories render');
     return stories.map(story => (
-      <tr key={story.item.id} className="athing">
+      <tr key={story.item.id} className="story">
         <Story story={story.item} rank={story.index + 1} />
       </tr>
     ));

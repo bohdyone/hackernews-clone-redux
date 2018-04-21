@@ -14,3 +14,19 @@ export async function getTopStories(): Promise<number[]> {
   let storyIds = await response.json();
   return storyIds;
 }
+
+export async function getNewStories(): Promise<number[]> {
+  const url = 'https://hacker-news.firebaseio.com/v0/newstories.json';
+
+  let response = await fetch(url);
+  let storyIds = await response.json();
+  return storyIds;
+}
+
+export async function getBestStories(): Promise<number[]> {
+  const url = 'https://hacker-news.firebaseio.com/v0/beststories.json';
+
+  let response = await fetch(url);
+  let storyIds = await response.json();
+  return storyIds;
+}

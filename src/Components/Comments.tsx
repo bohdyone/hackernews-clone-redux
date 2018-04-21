@@ -1,17 +1,10 @@
 import * as React from 'react';
 import Comment from './Comment';
 import { Item, IndexedItem } from '../Data';
-import {
-  store,
-  showChildrenAction,
-  State,
-  showTopStoriesAction
-} from '../Update';
+import { store, State, showTopStoriesAction } from '../Update';
 import { connect } from 'react-redux';
 import * as _ from 'lodash';
 // import _ from 'lodash';
-
-const DEPTH_SPACER = 40;
 
 interface Props {
   story: Item | null;
@@ -60,11 +53,6 @@ class CommentsComponent extends React.Component<Props, {}> {
   //   return outputComments;
   // }
 
-  toggleCommentChildren(comment: IndexedItem, show: boolean) {
-    console.log({ toggleCommentChildren: comment });
-    store.dispatch(showChildrenAction(comment, show));
-  }
-
   backToStories() {
     store.dispatch(showTopStoriesAction());
   }
@@ -111,9 +99,8 @@ class CommentsComponent extends React.Component<Props, {}> {
             <Comment
               key={cInfo.item.id}
               comment={cInfo.item}
-              spacing={DEPTH_SPACER * (cInfo.depth || 0)}
+              depth={cInfo.depth || 0}
               showingChildren={cInfo.item.id in props.commentsExpanded}
-              toggleChildren={this.toggleCommentChildren.bind(null, cInfo)}
             />
           ))}
         </tbody>

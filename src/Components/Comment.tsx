@@ -1,16 +1,19 @@
 import * as React from 'react';
 import { Item } from '../Data';
+import { store, showChildrenAction } from '../Update';
 
 interface Props {
-  toggleChildren: any;
   comment: Item;
+  depth: number;
   showingChildren: boolean;
-  spacing: number;
 }
+
+const DEPTH_SPACER = 40;
 
 class Comment extends React.PureComponent<Props, {}> {
   loadChildren = (yes: boolean) => {
-    this.props.toggleChildren(yes);
+    let { comment, depth } = this.props;
+    store.dispatch(showChildrenAction(comment, depth, yes));
   };
 
   renderCollapseControl = () => {
@@ -33,6 +36,7 @@ class Comment extends React.PureComponent<Props, {}> {
   };
 
   render() {
+    console.log('Comment render');
     const props = this.props;
     const comment = this.props.comment;
     return (
@@ -42,7 +46,11 @@ class Comment extends React.PureComponent<Props, {}> {
             <tbody>
               <tr>
                 <td className="ind">
-                  <img src="s.gif" height={1} width={props.spacing} />
+                  <img
+                    src="s.gif"
+                    height={1}
+                    width={props.depth * DEPTH_SPACER}
+                  />
                 </td>
                 <td className="votelinks">
                   <div>

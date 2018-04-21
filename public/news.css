@@ -2,6 +2,14 @@ tr.story {
   padding: 1rem;
 }
 
+a.storylink {
+  padding-right: 0.5rem;
+}
+
+.rank {
+  padding: 0.5rem;
+}
+
 body {
   font-family: Verdana, Geneva, sans-serif;
   font-size: 10pt;

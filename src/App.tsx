@@ -1,8 +1,6 @@
 import * as React from 'react';
 import './App.css';
 import { store, showTopStoriesAction, ViewType, State } from './Update';
-
-import logo from './logo.svg';
 import Stories from './Components/Stories';
 import Comments from './Components/Comments';
 import { connect } from 'react-redux';
@@ -23,15 +21,7 @@ class AppComponent extends React.Component<Props> {
   }
 
   public render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        {this.renderMainView()}
-      </div>
-    );
+    return <div className="App">{this.renderMainView()}</div>;
   }
 }
 

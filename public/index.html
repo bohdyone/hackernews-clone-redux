@@ -22,26 +22,106 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-  <title>React App</title>
+  <title>Hackernews Clone</title>
 </head>
 
 <body>
-  <noscript>
-    You need to enable JavaScript to run this app.
-  </noscript>
+  <center>
+    <table id="hnmain" border="0" cellpadding="0" cellspacing="0" width="85%" bgcolor="#f6f6ef">
+      <tbody>
+        <tr>
+          <td bgcolor="#ff6600">
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:2px">
+              <tbody>
+                <tr>
+                  <td style="width:18px;padding-right:4px">
+                    <a href="https://news.ycombinator.com">
+                      <img src="y18.gif" width="18" height="18" style="border:1px white solid;">
+                    </a>
+                  </td>
+                  <td style="line-height:12pt; height:10px;">
+                    <span class="pagetop">
+                      <b class="hnname">
+                        <a href="news">Hacker News</a>
+                      </b>
+                      <span class="topsel">
+                        <a href="newest">new</a>
+                      </span> |
+                      <a href="threads?id=user">threads</a> |
+                      <a href="newcomments">comments</a> |
+                      <a href="show">show</a> |
+                      <a href="ask">ask</a> |
+                      <a href="jobs">jobs</a> |
+                      <a href="submit">submit</a>
+                    </span>
+                  </td>
+                  <td style="text-align:right;padding-right:4px;">
+                    <span class="pagetop">
+                      <a id="me" href="user?id=user">user</a> (4) |
+                      <a id="logout" href="logout?auth=auth&amp;goto=newest%3Fn%3D151%26next%3D16888945">logout</a>
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        <tr style="height:10px"></tr>
+        <tr>
+          <td>
+            <table border="0" cellpadding="0" cellspacing="0" class="itemlist">
+              <tbody id="root">
 
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <img src="s.gif" height="10" width="0">
+            <table width="100%" cellspacing="0" cellpadding="1">
+              <tbody>
+                <tr>
+                  <td bgcolor="#ff6600"></td>
+                </tr>
+              </tbody>
+            </table>
+            <br>
+            <center>
+              <span class="yclinks">
+                <a href="newsguidelines.html">Guidelines</a>
+                |
+                <a href="newsfaq.html">FAQ</a>
+                |
+                <a href="mailto:hn@ycombinator.com">Support</a>
+                |
+                <a href="https://github.com/HackerNews/API">API</a>
+                |
+                <a href="security.html">Security</a>
+                |
+                <a href="lists">Lists</a>
+                |
+                <a href="bookmarklet.html" rel="nofollow">Bookmarklet</a>
+                |
+                <a href="http://www.ycombinator.com/legal/">Legal</a>
+                |
+                <a href="http://www.ycombinator.com/apply/">Apply to YC</a>
+                |
+                <a href="mailto:hn@ycombinator.com">Contact</a>
+              </span>
+              <br>
+              <br>
+              <form method="get" action="//hn.algolia.com/">Search:
+                <input type="text" name="q" value="" size="17" autocorrect="off" spellcheck="false" autocapitalize="off" autocomplete="false">
+              </form>
+            </center>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </center>
+  <script type="text/javascript" src="hn.js?SnnbS2sA2dozw8DOX6BX"></script>
 
-  <div id="root"></div>
-  <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
 </body>
 
 </html>

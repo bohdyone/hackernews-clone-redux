@@ -16,13 +16,12 @@ class Story extends React.PureComponent<Props, {}> {
   renderStoryOrStub(item?: Item) {
     return item ? (
       <>
-        <a href={item.url} className="storylink" rel="nofollow">
+        <a href={item.url} target="_blank" className="storylink" rel="nofollow">
           {item.title}
         </a>
         <span className="sitebit comhead">
-          {item.descendants}
           (<a href="discuss" onClick={e => this.clickDiscuss(item, e)}>
-            Discuss
+            Discuss - {item.descendants} comments
           </a>)
         </span>
       </>
@@ -37,7 +36,7 @@ class Story extends React.PureComponent<Props, {}> {
     console.log('Single Story render');
     return (
       <td className="title">
-        <span className="rank">{this.props.rank}</span>
+        <span className="rank">{this.props.rank}.</span>
         {this.renderStoryOrStub(this.props.story)}
       </td>
     );

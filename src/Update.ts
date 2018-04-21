@@ -53,17 +53,17 @@ export type ShowChildrenAction = {
 };
 
 type ShowTopStories = {
-  type: 'TOP_STORIES_SHOW';
+  type: 'STORIES_TOP_SHOW';
   payload: undefined;
 };
 
 export type ShowCommentsAction = {
-  type: 'SHOW_STORY_COMMENTS';
+  type: 'STORY_COMMENTS_SHOW';
   payload: Item;
 };
 
 type CommentsLoaded = {
-  type: 'CommentsLoaded';
+  type: 'COMMENTS_LOADED';
   payload: IndexedItem[];
 };
 type StoriesLoaded = {
@@ -77,15 +77,15 @@ export type ItemLoadedAction = {
 };
 
 export type LoadItemsAction = {
-  type: 'LOAD_ITEMS';
+  type: 'ITEMS_LOAD';
   payload: IndexedItem[];
 };
 
 export type ItemLoadingSetAction = {
   type: 'ITEM_LOADING_SET';
   payload: {
-    item: IndexedItem,
-    loading: boolean
+    item: IndexedItem;
+    loading: boolean;
   };
 };
 
@@ -111,7 +111,7 @@ export function reducer(state: State, action: Action): State {
   if (state === undefined) return initState;
 
   switch (action.type) {
-    case 'TOP_STORIES_SHOW':
+    case 'STORIES_TOP_SHOW':
       // load stories
       return {
         ...state,
@@ -120,7 +120,7 @@ export function reducer(state: State, action: Action): State {
         selectedStory: null
       };
 
-    case 'SHOW_STORY_COMMENTS':
+    case 'STORY_COMMENTS_SHOW':
       // load comments
 
       return {
@@ -146,7 +146,7 @@ export function reducer(state: State, action: Action): State {
       };
     }
 
-    case 'CommentsLoaded': {
+    case 'COMMENTS_LOADED': {
       let payload = action.payload;
       let newComments = [...state.comments];
       newComments.push(...payload);
@@ -178,16 +178,14 @@ export function reducer(state: State, action: Action): State {
       // handled in saga
       return state;
     }
-    case 'LOAD_ITEMS': {
+    case 'ITEMS_LOAD': {
       return state;
     }
     case 'ITEM_LOADING_SET': {
-      let {item, loading} = action.payload;
-      let newState = {...state.itemsLoading};
-      if (loading)
-        newState[item.id] = true;
-      else
-        delete newState[item.id];
+      let { item, loading } = action.payload;
+      let newState = { ...state.itemsLoading };
+      if (loading) newState[item.id] = true;
+      else delete newState[item.id];
 
       return {
         ...state,
@@ -221,19 +219,22 @@ export function showChildrenAction(
 
 export function showTopStoriesAction(): ShowTopStories {
   return {
-    type: 'TOP_STORIES_SHOW',
+    type: 'STORIES_TOP_SHOW',
     payload: undefined
   };
 }
 
 export function showCommentsAction(story: Item): ShowCommentsAction {
   return {
-    type: 'SHOW_STORY_COMMENTS',
+    type: 'STORY_COMMENTS_SHOW',
     payload: story
   };
 }
 
-export function itemLoadingSetAction(item: IndexedItem, loading: boolean): ItemLoadingSetAction {
+export function itemLoadingSetAction(
+  item: IndexedItem,
+  loading: boolean
+): ItemLoadingSetAction {
   return {
     type: 'ITEM_LOADING_SET',
     payload: {
@@ -254,14 +255,14 @@ export function storiesLoadedAction(stories: IndexedItem[]): StoriesLoaded {
 export function commentsLoadedAction(comments: IndexedItem[]): CommentsLoaded {
   console.log({ commentsLoadedAction: comments });
   return {
-    type: 'CommentsLoaded',
+    type: 'COMMENTS_LOADED',
     payload: comments
   };
 }
 
 export function loadItemsAction(items: IndexedItem[]): LoadItemsAction {
   return {
-    type: 'LOAD_ITEMS',
+    type: 'ITEMS_LOAD',
     payload: items
   };
 }

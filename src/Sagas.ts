@@ -66,7 +66,7 @@ function* watchFetchItem(chan: Channel<IndexedItem>) {
 
 function* watchStopFetching(chan: Channel<IndexedItem>) {
   while (true) {
-    yield take(['TOP_STORIES_SHOW', 'SHOW_STORY_COMMENTS']);
+    yield take(['STORIES_TOP_SHOW', 'STORY_COMMENTS_SHOW']);
     // drop buffered items
     yield flush(chan);
   }
@@ -85,7 +85,7 @@ export function* watchFetchItems() {
   yield fork(watchStopFetching, itemChannel);
 
   while (true) {
-    let { payload }: LoadItemsAction = yield take('LOAD_ITEMS');
+    let { payload }: LoadItemsAction = yield take('ITEMS_LOAD');
     for (let itemDef of payload) {
       let existing = false;
       // check for items already loaded
@@ -170,7 +170,7 @@ function* showChildren(action: ShowChildrenAction) {
 }
 
 export function* rootSaga() {
-  yield takeLatest('TOP_STORIES_SHOW', fetchTopStories);
-  yield takeLatest('SHOW_STORY_COMMENTS', showComments);
+  yield takeLatest('STORIES_TOP_SHOW', fetchTopStories);
+  yield takeLatest('STORY_COMMENTS_SHOW', showComments);
   yield takeLatest('ITEM_CHILDREN_SHOW', showChildren);
 }

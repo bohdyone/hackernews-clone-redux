@@ -67,10 +67,28 @@ class CommentsComponent extends React.Component<Props, {}> {
     let children = _.sortBy(items[parentId], 'index');
     let withGrandChildren = _.flatMap(children, c => [
       { ...c, depth: depth },
-      ...this.flattenItemsQuick(items, expanded, c.item.id, depth + 1)
+      ...this.flattenItemsQuick(
+        items,
+        expanded,
+        (c.item || { id: 0 }).id,
+        depth + 1
+      )
     ]);
 
     return withGrandChildren;
+  }
+
+  renderItemOrStub(cInfo: IndexedItem) {
+    return cInfo.item ? (
+      <Comment
+        key={cInfo.item.id}
+        comment={cInfo.item}
+        depth={cInfo.depth || 0}
+        showingChildren={cInfo.item.id in this.props.commentsExpanded}
+      />
+    ) : (
+      <tr />
+    );
   }
 
   render() {
@@ -85,7 +103,6 @@ class CommentsComponent extends React.Component<Props, {}> {
       this.props.commentsExpanded,
       (this.props.story || { id: 0 }).id
     );
-    const props = this.props;
 
     return (
       <table className="comment-tree">
@@ -95,14 +112,7 @@ class CommentsComponent extends React.Component<Props, {}> {
               <button onClick={this.backToStories}>Back to Stories</button>
             </td>
           </tr>
-          {commentInfos.map(cInfo => (
-            <Comment
-              key={cInfo.item.id}
-              comment={cInfo.item}
-              depth={cInfo.depth || 0}
-              showingChildren={cInfo.item.id in props.commentsExpanded}
-            />
-          ))}
+          {commentInfos.map(cInfo => this.renderItemOrStub(cInfo))}
         </tbody>
       </table>
     );

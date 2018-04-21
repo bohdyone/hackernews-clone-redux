@@ -1,12 +1,15 @@
 import * as React from 'react';
 import * as _ from 'lodash';
+import Observer from 'react-intersection-observer';
+
 import Story from './Story';
-import { State } from '../Update';
+import { State, store, loadItemsAction, ItemFlag } from '../Update';
 import { connect } from 'react-redux';
 import { IndexedItem } from '../Data';
 
 interface Props {
   stories: IndexedItem[];
+  itemsLoading: ItemFlag;
 }
 
 class StoriesComponent extends React.Component<Props, {}> {
@@ -19,15 +22,26 @@ class StoriesComponent extends React.Component<Props, {}> {
 
   componentDidMount() {}
 
+  storyInView(item: IndexedItem, inView: boolean) {
+    // console.log({ storyInView: { inView: inView, item: item } });
+    // if (inView && !this.props.itemsLoading[item.id])
+    if (inView && !item.item) store.dispatch(loadItemsAction([item]));
+  }
+
   render() {
     // reorder and render
-    const stories = _.sortBy(this.props.stories, 'index');
+    const items = _.sortBy(this.props.stories, 'index');
 
-    console.log(stories);
+    console.log(items);
     console.log('Stories render');
-    return stories.map(story => (
-      <tr key={story.item.id} className="story">
-        <Story story={story.item} rank={story.index + 1} />
+    return items.map(item => (
+      <tr key={item.id} className="story">
+        <Observer>
+          {inView => {
+            this.storyInView(item, inView);
+            return <Story story={item.item} rank={item.index + 1} />;
+          }}
+        </Observer>
       </tr>
     ));
   }
@@ -36,7 +50,8 @@ class StoriesComponent extends React.Component<Props, {}> {
 const mapStateToProps = (state: State): Props => {
   console.log(state);
   return {
-    stories: state.stories
+    stories: state.stories,
+    itemsLoading: state.itemsLoading
   };
 };
 

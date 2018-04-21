@@ -3,7 +3,7 @@ import { store, showCommentsAction } from '../Update';
 import { Item } from '../Data';
 
 interface Props {
-  story: Item;
+  story?: Item;
   rank: number;
 }
 
@@ -12,20 +12,31 @@ class Story extends React.PureComponent<Props, {}> {
     e.preventDefault();
     store.dispatch(showCommentsAction(story));
   }
-  render() {
-    const story = this.props.story;
-    return (
-      <td className="title">
-        <span className="rank">{this.props.rank}</span>
-        <a href={story.url} className="storylink" rel="nofollow">
-          {story.title}
+
+  renderStoryOrStub(item?: Item) {
+    return item ? (
+      <>
+        <a href={item.url} className="storylink" rel="nofollow">
+          {item.title}
         </a>
         <span className="sitebit comhead">
-          {story.descendants}
-          (<a href="discuss" onClick={e => this.clickDiscuss(story, e)}>
+          {item.descendants}
+          (<a href="discuss" onClick={e => this.clickDiscuss(item, e)}>
             Discuss
           </a>)
         </span>
+      </>
+    ) : (
+      <span>...</span>
+    );
+  }
+
+  render() {
+    console.log('Single Story render');
+    return (
+      <td className="title">
+        <span className="rank">{this.props.rank}</span>
+        {this.renderStoryOrStub(this.props.story)}
       </td>
     );
   }

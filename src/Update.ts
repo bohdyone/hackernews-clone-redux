@@ -1,7 +1,8 @@
 import { applyMiddleware, createStore } from 'redux';
-import { Item, IndexedItem, IndexedItemDef } from './Data';
+import { Item, IndexedItem } from './Data';
 import createSagaMiddleware from 'redux-saga';
 import { watchFetchItems, watchItemLoaded, rootSaga } from './Sagas';
+import * as _ from 'lodash';
 
 export type ViewType = 'topStories' | 'comments';
 
@@ -18,7 +19,10 @@ export interface State {
   storyCache: ItemLookup;
   stories: IndexedItem[];
   comments: IndexedItem[];
+  itemsLoading: ItemFlag;
 }
+
+export type ItemFlag = { [key: number]: boolean };
 
 export type ItemLookup = {
   [key: number]: Item;
@@ -31,7 +35,8 @@ const initState: State = {
   storyCommentCache: {},
   storyCache: {},
   stories: [],
-  comments: []
+  comments: [],
+  itemsLoading: {}
 };
 
 // type ShowTopStories = {
@@ -73,7 +78,15 @@ export type ItemLoadedAction = {
 
 export type LoadItemsAction = {
   type: 'LOAD_ITEMS';
-  payload: IndexedItemDef[];
+  payload: IndexedItem[];
+};
+
+export type ItemLoadingSetAction = {
+  type: 'ITEM_LOADING_SET';
+  payload: {
+    item: IndexedItem,
+    loading: boolean
+  };
 };
 
 export type ViewChangedAction = {
@@ -88,7 +101,8 @@ type Action =
   | CommentsLoaded
   | StoriesLoaded
   | LoadItemsAction
-  | ItemLoadedAction;
+  | ItemLoadedAction
+  | ItemLoadingSetAction;
 
 export function reducer(state: State, action: Action): State {
   // an error about the return type means you missed a case
@@ -119,8 +133,13 @@ export function reducer(state: State, action: Action): State {
 
     case 'STORIES_LOADED': {
       let payload = action.payload;
-      let newStories = [...state.stories];
-      newStories.push(...payload);
+      let newStories = state.stories.map(story => {
+        let matching = payload.find(s => s.id == story.id);
+        return matching ? matching : story;
+      });
+
+      newStories.push(..._.differenceBy(payload, newStories, 'id'));
+
       return {
         ...state,
         stories: newStories
@@ -162,6 +181,19 @@ export function reducer(state: State, action: Action): State {
     case 'LOAD_ITEMS': {
       return state;
     }
+    case 'ITEM_LOADING_SET': {
+      let {item, loading} = action.payload;
+      let newState = {...state.itemsLoading};
+      if (loading)
+        newState[item.id] = true;
+      else
+        delete newState[item.id];
+
+      return {
+        ...state,
+        itemsLoading: newState
+      };
+    }
   }
 }
 export function itemLoadedAction(item: IndexedItem): ItemLoadedAction {
@@ -201,6 +233,16 @@ export function showCommentsAction(story: Item): ShowCommentsAction {
   };
 }
 
+export function itemLoadingSetAction(item: IndexedItem, loading: boolean): ItemLoadingSetAction {
+  return {
+    type: 'ITEM_LOADING_SET',
+    payload: {
+      item: item,
+      loading: loading
+    }
+  };
+}
+
 export function storiesLoadedAction(stories: IndexedItem[]): StoriesLoaded {
   console.log({ storiesLoadedAction: stories });
   return {
@@ -217,7 +259,7 @@ export function commentsLoadedAction(comments: IndexedItem[]): CommentsLoaded {
   };
 }
 
-export function loadItemsAction(items: IndexedItemDef[]): LoadItemsAction {
+export function loadItemsAction(items: IndexedItem[]): LoadItemsAction {
   return {
     type: 'LOAD_ITEMS',
     payload: items

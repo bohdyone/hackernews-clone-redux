@@ -20,18 +20,20 @@ import {
   ShowChildrenAction,
   State,
   showChildrenAction
+  // itemLoadingSetAction
 } from './Update';
-import { IndexedItemDef, IndexedItem, ItemType, Item } from './Data';
+import { IndexedItem, ItemType, Item } from './Data';
 import * as _ from 'lodash';
 
 const ITEM_CONCURRENCY_LIMIT = 15;
 const FLUSH_TIMER = 500;
 const INTIAL_LOAD_DEPTH = 1;
 
-function* fetchItem(itemDef: IndexedItemDef) {
+function* fetchItem(itemDef: IndexedItem) {
   let item = yield call(Api.fetchItem, itemDef.id);
   yield put(
     itemLoadedAction({
+      id: item.id,
       item: item,
       index: itemDef.index,
       parentId: itemDef.parentId,
@@ -45,23 +47,24 @@ function* fetchTopStories() {
   let stories = yield call(Api.getTopStories);
   let indexedItems = stories.map(
     (id, index) =>
-      <IndexedItemDef>{
+      <IndexedItem>{
         id: id,
         index: index,
         type: 'story'
       }
   );
-  yield put(loadItemsAction(indexedItems));
+  // yield put(loadItemsAction(indexedItems));
+  yield put(storiesLoadedAction(indexedItems));
 }
 
-function* watchFetchItem(chan: Channel<IndexedItemDef>) {
+function* watchFetchItem(chan: Channel<IndexedItem>) {
   while (true) {
     const itemDef = yield take(chan);
     yield call(fetchItem, itemDef);
   }
 }
 
-function* watchStopFetching(chan: Channel<IndexedItemDef>) {
+function* watchStopFetching(chan: Channel<IndexedItem>) {
   while (true) {
     yield take(['TOP_STORIES_SHOW', 'SHOW_STORY_COMMENTS']);
     // drop buffered items
@@ -70,7 +73,7 @@ function* watchStopFetching(chan: Channel<IndexedItemDef>) {
 }
 
 export function* watchFetchItems() {
-  const itemChannel: Channel<IndexedItemDef> = yield call(
+  const itemChannel: Channel<IndexedItem> = yield call(
     channel,
     buffers.expanding()
   );
@@ -90,9 +93,15 @@ export function* watchFetchItems() {
         let commentsLoaded: IndexedItem[] = yield select(
           (state: State) => state.comments
         );
-        existing = commentsLoaded.findIndex(i => i.item.id == itemDef.id) > -1;
+        existing =
+          commentsLoaded.findIndex(
+            i => (i.item || { id: 0 }).id == itemDef.id
+          ) > -1;
       }
-      if (!existing) yield put(itemChannel, itemDef);
+      if (!existing) {
+        // yield put(itemLoadingSetAction(itemDef, true));
+        yield put(itemChannel, itemDef);
+      }
     }
   }
 }
@@ -109,6 +118,7 @@ function* watchItemsLoaded(chan) {
       let partitioned = _.groupBy(items, 'type');
       let comments = partitioned[<ItemType>'comment'] || [];
       let stories = partitioned[<ItemType>'story'] || [];
+      // yield all(items.map(i => itemLoadingSetAction(i, false)));
       if (comments.length) yield put(commentsLoadedAction(comments));
       if (stories.length) yield put(storiesLoadedAction(stories));
     }
@@ -130,7 +140,7 @@ export function* watchItemLoaded() {
       payload.type == 'comment' &&
       (payload.depth || 0) <= INTIAL_LOAD_DEPTH
     ) {
-      yield put(showChildrenAction(payload.item, payload.depth, true));
+      yield put(showChildrenAction(<Item>payload.item, payload.depth, true));
     }
   }
 }
@@ -143,7 +153,7 @@ function* loadChildren(item: Item, depth = 0, isStory = false) {
   let commentIds = item.kids || [];
   let items = commentIds.map(
     (id, index) =>
-      <IndexedItemDef>{
+      <IndexedItem>{
         id: id,
         index: index,
         parentId: item.id,

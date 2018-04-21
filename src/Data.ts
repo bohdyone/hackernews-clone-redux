@@ -10,18 +10,12 @@ export interface Item {
 
 export type IndexedItem = {
   index: number;
-  item: Item;
+  id: number;
+  item?: Item;
   type: ItemType;
   parentId?: number;
   depth?: number;
-};
-
-export type IndexedItemDef = {
-  index: number;
-  id: number;
-  type: ItemType;
-  depth: number;
-  parentId?: number;
+  loading?: boolean;
 };
 
 export type ItemType = 'comment' | 'story';

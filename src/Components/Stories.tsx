@@ -36,7 +36,7 @@ class StoriesComponent extends React.Component<Props, {}> {
     console.log('Stories render');
     return items.map(item => (
       <tr key={item.id} className="story">
-        <Observer>
+        <Observer triggerOnce={true}>
           {inView => {
             this.storyInView(item, inView);
             return <Story story={item.item} rank={item.index + 1} />;

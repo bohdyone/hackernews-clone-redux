@@ -27,7 +27,9 @@ class Story extends React.PureComponent<Props, {}> {
         </span>
       </>
     ) : (
-      <span>...</span>
+      <span>
+        <img width="32" height="6" src="./loader2.gif" />
+      </span>
     );
   }
 

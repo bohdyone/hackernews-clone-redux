@@ -21,13 +21,13 @@ class StoriesComponent extends React.Component<Props, {}> {
 
   render() {
     // reorder and render
-    const stories = _.sortBy(this.props.stories, 'index').map(is => is.item);
+    const stories = _.sortBy(this.props.stories, 'index');
 
     console.log(stories);
     console.log('Stories render');
     return stories.map(story => (
-      <tr key={story.id} className="athing">
-        <Story story={story} />
+      <tr key={story.item.id} className="athing">
+        <Story story={story.item} rank={story.index + 1} />
       </tr>
     ));
   }

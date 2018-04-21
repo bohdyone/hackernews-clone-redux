@@ -1,7 +1,12 @@
 import * as React from 'react';
 import Comment from './Comment';
 import { Item, IndexedItem } from '../Data';
-import { store, showChildrenAction, State } from '../Update';
+import {
+  store,
+  showChildrenAction,
+  State,
+  showTopStoriesAction
+} from '../Update';
 import { connect } from 'react-redux';
 import * as _ from 'lodash';
 // import _ from 'lodash';
@@ -60,26 +65,21 @@ class CommentsComponent extends React.Component<Props, {}> {
     store.dispatch(showChildrenAction(comment, show));
   }
 
-  flattenItems(items: IndexedItem[], depth = 1): IndexedItem[] {
-    let levelItems = items.filter(i => i.depth == depth);
-    let otherItems = _.difference(items, levelItems);
-    levelItems = _.orderBy(levelItems, 'index');
-    return _.flatMap(levelItems, i => [
-      i,
-      ...this.flattenItems(otherItems, depth + 1).filter(
-        c => c.parentId == i.item.id
-      )
-    ]);
+  backToStories() {
+    store.dispatch(showTopStoriesAction());
   }
 
   flattenItemsQuick(
     items: { [parentId: number]: IndexedItem[] },
-    parentId: number
+    expanded: { [key: number]: boolean },
+    parentId: number,
+    depth: number = 0
   ): IndexedItem[] {
+    if (depth > 0 && !(parentId in expanded)) return [];
     let children = _.sortBy(items[parentId], 'index');
     let withGrandChildren = _.flatMap(children, c => [
-      c,
-      ...this.flattenItemsQuick(items, c.item.id)
+      { ...c, depth: depth },
+      ...this.flattenItemsQuick(items, expanded, c.item.id, depth + 1)
     ]);
 
     return withGrandChildren;
@@ -94,6 +94,7 @@ class CommentsComponent extends React.Component<Props, {}> {
     let grouped = _.groupBy(this.props.comments, 'parentId');
     const commentInfos = this.flattenItemsQuick(
       grouped,
+      this.props.commentsExpanded,
       (this.props.story || { id: 0 }).id
     );
     const props = this.props;
@@ -101,6 +102,11 @@ class CommentsComponent extends React.Component<Props, {}> {
     return (
       <table className="comment-tree">
         <tbody>
+          <tr>
+            <td>
+              <button onClick={this.backToStories}>Back to Stories</button>
+            </td>
+          </tr>
           {commentInfos.map(cInfo => (
             <Comment
               key={cInfo.item.id}

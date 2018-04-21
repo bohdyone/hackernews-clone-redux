@@ -1,8 +1,10 @@
 import * as React from 'react';
 import { store, showCommentsAction } from '../Update';
+import { Item } from '../Data';
 
 interface Props {
-  story: any;
+  story: Item;
+  rank: number;
 }
 
 class Story extends React.PureComponent<Props, {}> {
@@ -14,15 +16,7 @@ class Story extends React.PureComponent<Props, {}> {
     const story = this.props.story;
     return (
       <td className="title">
-        <span className="rank" />{' '}
-        <div>
-          <a
-            // onclick="return vote(event, this, &quot;up&quot;)"
-            href="vote?id=16836735&how=up&auth=0fd9c4bde2725dcfacb843cdf873bcc55b41244e&goto=newest"
-          >
-            <div className="votearrow" title="upvote" />
-          </a>
-        </div>
+        <span className="rank">{this.props.rank}</span>
         <a href={story.url} className="storylink" rel="nofollow">
           {story.title}
         </a>

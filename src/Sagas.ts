@@ -30,6 +30,7 @@ const FLUSH_TIMER = 500;
 const INTIAL_LOAD_DEPTH = 1;
 
 function* fetchItem(itemDef: IndexedItem) {
+  try {
   let item = yield call(Api.fetchItem, itemDef.id);
   yield put(
     itemLoadedAction({
@@ -38,9 +39,12 @@ function* fetchItem(itemDef: IndexedItem) {
       index: itemDef.index,
       parentId: itemDef.parentId,
       depth: itemDef.depth,
-      type: itemDef.type
-    })
-  );
+        type: itemDef.type
+      })
+    );
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 function* fetchTopStories() {

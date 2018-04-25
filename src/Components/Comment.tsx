@@ -73,9 +73,6 @@ class Comment extends React.PureComponent<Props, {}> {
                         <a href="item?id=16834700">14 hours ago</a>
                       </span>{' '}
                       <span id="unv_16834700" />
-                      <span className="par">
-                        {this.renderCollapseControl()}
-                      </span>{' '}
                       <span className="storyon" />
                     </span>
                   </div>
@@ -85,17 +82,10 @@ class Comment extends React.PureComponent<Props, {}> {
                       <span
                         dangerouslySetInnerHTML={{ __html: comment.text }}
                       />
-                      <div className="reply">
-                        {' '}
-                        <p>
-                          {/* <font size={1}> */}
-                          <u>
-                            <a href="reply?id=16834700&goto=item%3Fid%3D16826156%2316834700">
-                              reply
-                            </a>
-                          </u>
-                          {/* </font> */}
-                        </p>
+                      <div>
+                        <span className="par">
+                          {this.renderCollapseControl()}
+                        </span>
                       </div>
                     </span>
                   </div>

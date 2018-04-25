@@ -31,14 +31,14 @@ const INTIAL_LOAD_DEPTH = 1;
 
 function* fetchItem(itemDef: IndexedItem) {
   try {
-  let item = yield call(Api.fetchItem, itemDef.id);
-  yield put(
-    itemLoadedAction({
-      id: item.id,
-      item: item,
-      index: itemDef.index,
-      parentId: itemDef.parentId,
-      depth: itemDef.depth,
+    let item = yield call(Api.fetchItem, itemDef.id);
+    yield put(
+      itemLoadedAction({
+        id: item.id,
+        item: item,
+        index: itemDef.index,
+        parentId: itemDef.parentId,
+        depth: itemDef.depth,
         type: itemDef.type
       })
     );

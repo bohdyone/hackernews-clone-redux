@@ -1,7 +1,7 @@
 import { applyMiddleware, createStore } from 'redux';
 import { Item, IndexedItem } from './Data';
 import createSagaMiddleware from 'redux-saga';
-import { watchFetchItems, watchItemLoaded, rootSaga } from './Sagas';
+import { watchFetchItems, watchItemLoaded, rootSaga } from './UpdateAsync';
 import * as _ from 'lodash';
 
 export type ViewType = 'topStories' | 'comments';

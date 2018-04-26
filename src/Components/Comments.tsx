@@ -7,52 +7,12 @@ import * as _ from 'lodash';
 // import _ from 'lodash';
 
 interface Props {
-  story: Item | null;
+  story: Item;
   comments: IndexedItem[];
   commentsExpanded: { [key: number]: boolean };
 }
 
 class CommentsComponent extends React.Component<Props, {}> {
-  // flattenCommentTree(comments: List<item>, depth = 0) {
-  //   console.log(comments);
-  //   let outputComments = [];
-
-  //   // outputComments = _.flatMapDeep(comments, commentWithChildren => {
-  //   //   let levelComments = [];
-  //   //   let commentWithDepth = {
-  //   //     ...commentWithChildren,
-  //   //     depth: depth
-  //   //   };
-
-  //   //   levelComments.push(commentWithDepth);
-
-  //   //   if (commentWithDepth.showChildren$()) {
-  //   //     levelComments.push(
-  //   //       this.flattenCommentTree(commentWithDepth.children$(), depth + 1)
-  //   //     );
-  //   //   }
-
-  //   //   return levelComments;
-  //   // });
-  //   for (let commentWithChildren of comments) {
-  //     let commentWithDepth = {
-  //       ...commentWithChildren,
-  //       depth: depth
-  //     };
-
-  //     outputComments.push(commentWithDepth);
-  //     if (commentWithDepth.showChildren$()) {
-  //       let childComments = this.flattenCommentTree(
-  //         commentWithDepth.children$(),
-  //         depth + 1
-  //       );
-  //       Array.prototype.push.apply(outputComments, childComments);
-  //     }
-  //   }
-
-  //   return outputComments;
-  // }
-
   backToStories() {
     store.dispatch(showTopStoriesAction());
   }
@@ -65,7 +25,7 @@ class CommentsComponent extends React.Component<Props, {}> {
   ): IndexedItem[] {
     if (depth > 0 && !(parentId in expanded)) return [];
     let children = _.sortBy(items[parentId], 'index');
-    let withGrandChildren = _.flatMap(children, c => [
+    let withDescendants = _.flatMap(children, c => [
       { ...c, depth: depth },
       ...this.flattenItemsQuick(
         items,
@@ -75,7 +35,7 @@ class CommentsComponent extends React.Component<Props, {}> {
       )
     ]);
 
-    return withGrandChildren;
+    return withDescendants;
   }
 
   renderItemOrStub(cInfo: IndexedItem) {

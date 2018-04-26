@@ -112,6 +112,27 @@ class CommentsComponent extends React.Component<Props, {}> {
               <button onClick={this.backToStories}>Back to Stories</button>
             </td>
           </tr>
+          <tr>
+            <td>
+              <span className="rank" />
+              <a href="vote?id=16919952&how=up&auth=a4845fa2f717c8d6a56afaa5f20a18d0168a989b&goto=item%3Fid%3D16919952">
+                <div className="votearrow" title="upvote" />
+              </a>
+              <a
+                href={this.props.story.url}
+                className="storylink"
+                target="_blank"
+              >
+                {this.props.story.title}
+              </a>
+              <span className="sitebit comhead">
+                {' '}
+                (<a href="from?site=">
+                  <span className="sitestr">{this.props.story.url}</span>
+                </a>)
+              </span>
+            </td>
+          </tr>
           {commentInfos.map(cInfo => this.renderItemOrStub(cInfo))}
         </tbody>
       </table>
@@ -124,7 +145,14 @@ const mapStateToProps = (state: State): Props => {
   return {
     comments: state.comments,
     commentsExpanded: state.commentsExpanded,
-    story: state.selectedStory
+    story: state.selectedStory || {
+      id: 0,
+      by: '',
+      descendants: 0,
+      text: '',
+      title: '',
+      url: ''
+    }
   };
 };
 
